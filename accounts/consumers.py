@@ -1,8 +1,12 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .models import Message
-from .serializers import MessageSerializer
 from django.contrib.auth.models import AnonymousUser
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
+from .models import Message, Notification
+from .serializers import MessageSerializer, NotificationSerializer
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -45,21 +49,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "data": event["notification"]
         }))
 
-
     @staticmethod
     async def save_message(sender_id, recipient_id, content):
-        return await Message.objects.acreate(sender_id=sender_id, recipient_id=recipient_id, content=content)
+        return await Message.objects.acreate(
+            sender_id=sender_id,
+            recipient_id=recipient_id,
+            content=content
+        )
 
-from .models import Notification
-from .serializers import NotificationSerializer
 
+# This function can be safely imported and called inside a view or signal
 async def send_notification(user_id, content):
-    # Save to DB
-    notification = await Notification.objects.acreate(user_id=user_id, content=content)
+    notification = await Notification.objects.acreate(
+        user_id=user_id,
+        content=content
+    )
 
-    # Broadcast to WebSocket
-    from channels.layers import get_channel_layer
-    from asgiref.sync import async_to_sync
     layer = get_channel_layer()
     await layer.group_send(
         f"user_{user_id}",
@@ -69,10 +74,7 @@ async def send_notification(user_id, content):
         }
     )
 
-from accounts.consumers import send_notification
-
-# When booking is confirmed:
-await send_notification(
-    user_id=booking.lawyer.id,
-        content=f"New booking from {booking.client.get_full_name()} for {booking.date} at {booking.time}"
-)
+# ❌ Removed invalid 'await send_notification(...)' from global scope!
+# ✅ Instead, import and use this function inside a view using:
+#     from accounts.consumers import send_notification
+#     async_to_sync(send_notification)(...)
