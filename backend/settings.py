@@ -158,4 +158,17 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-DATABASES['default'] = dj_database_url.config(default=os.getenv('DATABASE_URL'))
+import dj_database_url
+import os
+
+# Default database for local development (SQLite)
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+# Override with PostgreSQL on Render if DATABASE_URL exists
+if os.getenv("DATABASE_URL"):
+    DATABASES['default'] = dj_database_url.config(default=os.getenv("DATABASE_URL"))
