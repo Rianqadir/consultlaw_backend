@@ -63,3 +63,10 @@ from .views import LawyerDashboardView
 urlpatterns += [
     path('lawyer/dashboard/', LawyerDashboardView.as_view(), name='lawyer-dashboard'),
 ]
+from .views import MyBookingsView
+
+urlpatterns += [
+    path("my-bookings/", MyBookingsView.as_view(), name="my-bookings"),
+]
+
+from django.urls import path

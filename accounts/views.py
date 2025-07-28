@@ -10,6 +10,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from asgiref.sync import async_to_sync
 from django.conf import settings
 from decimal import Decimal
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from datetime import datetime
+from .models import Booking
+from .serializers import BookingSerializer
 
 import stripe
 
@@ -288,3 +294,23 @@ class NotificationListView(generics.ListAPIView):
 
     def get_queryset(self):
         return Notification.objects.filter(user=self.request.user).order_by('-timestamp')
+
+
+
+class MyBookingsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        filter_type = request.query_params.get("filter", "all")
+        now = datetime.now()
+
+        if filter_type == "upcoming":
+            bookings = Booking.objects.filter(client=user, date__gte=now.date()).order_by('date')
+        elif filter_type == "past":
+            bookings = Booking.objects.filter(client=user, date__lt=now.date()).order_by('-date')
+        else:
+            bookings = Booking.objects.filter(client=user).order_by('-date')
+
+        serializer = BookingSerializer(bookings, many=True)
+        return Response(serializer.data)
