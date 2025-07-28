@@ -74,5 +74,5 @@ from accounts.consumers import send_notification
 # When booking is confirmed:
 await send_notification(
     user_id=booking.lawyer.id,
-    content=f"New booking from {booking.client.get_full_name()} for {booking.date} at {booking.time}"
+        content=f"New booking from {booking.client.get_full_name()} for {booking.date} at {booking.time}"
 )
