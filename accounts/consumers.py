@@ -40,10 +40,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(event["message"]))
 
     async def notify(self, event):
-    await self.send(text_data=json.dumps({
-        "type": "notification",
-        "data": event["notification"]
-    }))
+        await self.send(text_data=json.dumps({
+            "type": "notification",
+            "data": event["notification"]
+        }))
 
 
     @staticmethod
