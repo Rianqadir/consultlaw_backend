@@ -28,8 +28,7 @@ SECRET_KEY = 'django-insecure-iv#akh)vhus2nyb61#tue(eyunwh@r0g1h-s%3z!uismp4m%fl
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['consultlaw-backend.onrender.com', 'localhost', '127.0.0.1']
-
+ALLOWED_HOSTS = ['.render.com']
 
 
 
