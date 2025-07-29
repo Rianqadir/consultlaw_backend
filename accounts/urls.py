@@ -71,10 +71,8 @@ urlpatterns += [
 
 from django.urls import path
 
-# accounts/urls.py
-from .views import MyBookingsView
 
-urlpatterns = [
-    # ... other routes ...
-    path('my-bookings/', MyBookingsView.as_view(), name='my-bookings'),
-]
+from django.http import JsonResponse
+
+def homepage(request):
+    return JsonResponse({'message': 'ConsultLaw API Running ✅'})
