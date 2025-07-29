@@ -16,6 +16,12 @@ from rest_framework.permissions import IsAuthenticated
 from datetime import datetime
 from .models import Booking
 from .serializers import BookingSerializer
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .models import Booking
+from .serializers import BookingSerializer
+from datetime import datetime
 
 import stripe
 
@@ -314,3 +320,28 @@ class MyBookingsView(APIView):
 
         serializer = BookingSerializer(bookings, many=True)
         return Response(serializer.data)
+
+
+# accounts/views.py
+
+
+class MyBookingsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        filter_param = request.GET.get('filter', 'all')
+
+        if user.role != 'Client':
+            return Response({"detail": "Only clients can view this."}, status=403)
+
+        bookings = Booking.objects.filter(client=user)
+
+        # Apply filtering
+        if filter_param == "upcoming":
+            bookings = bookings.filter(date__gte=datetime.today()).order_by("date")
+        elif filter_param == "past":
+            bookings = bookings.filter(date__lt=datetime.today()).order_by("-date")
+
+        serialized = BookingSerializer(bookings, many=True)
+        return Response(serialized.data)

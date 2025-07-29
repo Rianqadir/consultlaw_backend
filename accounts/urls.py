@@ -70,3 +70,11 @@ urlpatterns += [
 ]
 
 from django.urls import path
+
+# accounts/urls.py
+from .views import MyBookingsView
+
+urlpatterns = [
+    # ... other routes ...
+    path('my-bookings/', MyBookingsView.as_view(), name='my-bookings'),
+]
