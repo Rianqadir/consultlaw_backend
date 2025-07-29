@@ -76,3 +76,12 @@ from django.http import JsonResponse
 
 def homepage(request):
     return JsonResponse({'message': 'ConsultLaw API Running ✅'})
+
+# urls.py
+from django.urls import path
+from .views import lawyer_dashboard_view
+
+urlpatterns = [
+    # ... other routes ...
+    path('lawyer/dashboard/', lawyer_dashboard_view, name='lawyer-dashboard'),
+]

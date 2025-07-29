@@ -8,6 +8,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from asgiref.sync import async_to_sync
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from datetime import date
+from .models import Booking
+from .serializers import BookingSerializer
 from django.conf import settings
 from decimal import Decimal
 from rest_framework.views import APIView
@@ -345,3 +351,23 @@ class MyBookingsView(APIView):
 
         serialized = BookingSerializer(bookings, many=True)
         return Response(serialized.data)
+
+
+# views.py
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def lawyer_dashboard_view(request):
+    user = request.user
+    if user.role != 'Lawyer':
+        return Response({'error': 'Only lawyers can access this view.'}, status=403)
+
+    today = date.today()
+    bookings = Booking.objects.filter(
+        lawyer=user,
+        date__gte=today
+    ).order_by('date', 'time')
+
+    serializer = BookingSerializer(bookings, many=True)
+    return Response(serializer.data)
