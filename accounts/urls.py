@@ -85,3 +85,13 @@ urlpatterns = [
     # ... other routes ...
     path('lawyer/dashboard/', lawyer_dashboard_view, name='lawyer-dashboard'),
 ]
+
+# urls.py
+
+from django.urls import path
+from .views import LawyerDashboardView
+
+urlpatterns = [
+    # other routes...
+    path('lawyer/dashboard/cancel/', LawyerDashboardView.as_view({'post': 'cancel_booking'}), name='cancel-booking'),
+]

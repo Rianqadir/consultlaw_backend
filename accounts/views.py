@@ -14,6 +14,12 @@ from rest_framework.response import Response
 from datetime import date
 from .models import Booking
 from .serializers import BookingSerializer
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+from .models import Booking
+from .serializers import BookingSerializer
 from django.conf import settings
 from decimal import Decimal
 from rest_framework.views import APIView
@@ -371,3 +377,38 @@ def lawyer_dashboard_view(request):
 
     serializer = BookingSerializer(bookings, many=True)
     return Response(serializer.data)
+
+
+
+class LawyerDashboardView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # already implemented
+        pass
+
+    @action(detail=False, methods=['post'])
+    def cancel_booking(self, request):
+        booking_id = request.data.get('booking_id')
+        reason = request.data.get('reason', 'Cancelled by lawyer')
+
+        try:
+            booking = Booking.objects.get(id=booking_id, lawyer=request.user)
+
+            if booking.status in ['cancelled', 'rejected']:
+                return Response({"error": "Booking already cancelled or rejected."}, status=400)
+
+            booking.status = 'cancelled'
+            booking.save()
+
+            # Optionally notify client
+            from .consumers import send_notification
+            import asyncio
+            asyncio.create_task(send_notification(
+                user_id=booking.client.id,
+                content=f"Your booking on {booking.date} at {booking.time} was cancelled. Reason: {reason}"
+            ))
+
+            return Response({"message": "Booking cancelled successfully."})
+        except Booking.DoesNotExist:
+            return Response({"error": "Booking not found or unauthorized."}, status=404)
